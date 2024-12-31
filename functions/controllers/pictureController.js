@@ -1,31 +1,23 @@
-import firebase from '../firebase.js';
 import Picture from '../models/pictureModel.js';
-import {
-  getFirestore,
-  collection,
-  doc,
-  addDoc,
-  getDoc,
-  getDocs,
-  updateDoc,
-  deleteDoc,
-} from 'firebase/firestore';
+import { getFirestore } from 'firebase-admin/firestore';
+import { initializeApp } from 'firebase-admin/app';
 
-const db = getFirestore(firebase, "travel-thing-database");
+initializeApp();
+const db = getFirestore('travel-thing-database');
 
-export const createPicture = async (req, res, next) => {
+export const createPicture = async (req, res) => {
   try {
     const data = req.body;
-    await addDoc(collection(db, 'pictures'), data);
+    await db.collection('pictures').add(data);
     res.status(200).send('picture created successfully');
   } catch (error) {
     res.status(400).send(error.message);
   }
 };
 
-export const getPictures = async (req, res, next) => {
+export const getPictures = async (req, res) => {
   try {
-    const pictures = await getDocs(collection(db, 'pictures'));
+    const pictures = await db.collection('pictures').get();
     const pictureArray = [];
 
     if (pictures.empty) {
@@ -47,12 +39,11 @@ export const getPictures = async (req, res, next) => {
   }
 };
 
-export const getPicture = async (req, res, next) => {
+export const getPicture = async (req, res) => {
   try {
     const id = req.params.id;
-    const picture = doc(db, 'pictures', id);
-    const data = await getDoc(picture);
-    if (data.exists()) {
+    const data = await db.collection('pictures').doc(id).get();
+    if (data.exists) {
       res.status(200).send(data.data());
     } else {
       res.status(404).send('picture not found');
@@ -62,22 +53,21 @@ export const getPicture = async (req, res, next) => {
   }
 };
 
-export const updatePicture = async (req, res, next) => {
+export const updatePicture = async (req, res) => {
   try {
     const id = req.params.id;
     const data = req.body;
-    const picture = doc(db, 'pictures', id);
-    await updateDoc(picture, data);
+    await db.collection('pictures').doc(id).update(data);
     res.status(200).send('picture updated successfully');
   } catch (error) {
     res.status(400).send(error.message);
   }
 };
 
-export const deletePicture = async (req, res, next) => {
+export const deletePicture = async (req, res) => {
   try {
     const id = req.params.id;
-    await deleteDoc(doc(db, 'pictures', id));
+    db.collection('pictures').doc(id).delete();
     res.status(200).send('picture deleted successfully');
   } catch (error) {
     res.status(400).send(error.message);
