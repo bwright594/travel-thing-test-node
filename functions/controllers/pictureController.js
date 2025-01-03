@@ -1,6 +1,6 @@
-import Picture from '../models/pictureModel.js';
-import { getFirestore } from 'firebase-admin/firestore';
 import { initializeApp } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+import Picture from '../models/pictureModel.js';
 
 initializeApp();
 const db = getFirestore('travel-thing-database');
@@ -8,8 +8,8 @@ const db = getFirestore('travel-thing-database');
 export const createPicture = async (req, res) => {
   try {
     const data = req.body;
-    await db.collection('pictures').add(data);
-    res.status(200).send('picture created successfully');
+    const newPicture = await db.collection('pictures').add(data);
+    res.status(200).send({ id: newPicture.id, ...(await newPicture.get()).data() });
   } catch (error) {
     res.status(400).send(error.message);
   }
@@ -27,7 +27,8 @@ export const getPictures = async (req, res) => {
         const picture = new Picture(
           doc.id,
           doc.data().name,
-          doc.data().person
+          doc.data().person,
+          doc.data().url
         );
         pictureArray.push(picture);
       });
