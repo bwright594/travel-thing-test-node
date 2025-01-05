@@ -27,16 +27,22 @@ export const createPicture = async (req, res) => {
     const picturePublicUrl = await getDownloadURL(newPictureRef);
     res.status(200).send({ id: newPicture.id, ...pictureToReturn, url: picturePublicUrl });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(400).send(error.message);
   }
 };
 
 export const getPictures = async (req, res) => {
   try {
-    const pictures = await db.collection('pictures').get();
+    const person = req.query.person;
+    let query = db.collection('pictures');
+    if (person) {
+      query = query.where('person', '==', person);
+    }
+    const pictures = await query.get();
     const pictureArray = [];
-    const [pictureBlobs] = await storage.getFiles();
+    const options = { prefix: person ? person + '/' : '' };
+    const [pictureBlobs] = await storage.getFiles(options);
 
     if (pictures.empty) {
       res.status(400).send('No Pictures found');
@@ -57,7 +63,7 @@ export const getPictures = async (req, res) => {
       res.status(200).send(pictureArray);
     }
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(400).send(error.message);
   }
 };
@@ -79,7 +85,7 @@ export const getPicture = async (req, res) => {
       res.status(404).send('picture not found');
     }
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(400).send(error.message);
   }
 };
