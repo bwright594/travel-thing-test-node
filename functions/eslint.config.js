@@ -8,6 +8,8 @@ export default [
     globals: {
       es6: true,
       node: true,
+      console: true,
+      atob: true
     }
   },
   rules: {
