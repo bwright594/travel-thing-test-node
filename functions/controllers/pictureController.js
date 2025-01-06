@@ -35,9 +35,13 @@ export const createPicture = async (req, res) => {
 export const getPictures = async (req, res) => {
   try {
     const person = req.query.person;
+    const date = req.query.date;
     let query = db.collection('pictures');
     if (person) {
       query = query.where('person', '==', person);
+    }
+    if (date) {
+      query = query.where('date', '==', date);
     }
     const pictures = await query.get();
     const pictureArray = [];
@@ -45,7 +49,7 @@ export const getPictures = async (req, res) => {
     const [pictureBlobs] = await storage.getFiles(options);
 
     if (pictures.empty) {
-      res.status(400).send('No Pictures found');
+      res.status(200).send(pictureArray);
     } else {
       for (let i = 0; i < pictures.size; i++) {
         const doc = pictures.docs[i];
@@ -56,7 +60,8 @@ export const getPictures = async (req, res) => {
           doc.data().name,
           doc.data().person,
           url,
-          doc.data().mediaType
+          doc.data().mediaType,
+          doc.data().date
         );
         pictureArray.push(picture);
       }
@@ -79,7 +84,9 @@ export const getPicture = async (req, res) => {
         data.data().name,
         data.data().person,
         url,
-        data.data().mediaType);
+        data.data().mediaType,
+        data.data().date
+      );
       res.status(200).send(picture);
     } else {
       res.status(404).send('picture not found');
